@@ -40,7 +40,9 @@ router.post("/addBrand", fetchAdmin,
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
+            //Getting brand detail
             const brandDetails = await Brands.findOne({ brand_name: brand_name })
+            //Check if brand already exists or not
             if (brandDetails) {
                 return res.status(404).json({ message: "Brand Name already exists" })
             }

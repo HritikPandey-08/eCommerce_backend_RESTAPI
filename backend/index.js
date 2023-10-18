@@ -28,6 +28,8 @@ app.use('/api/contactme',require('./routes/contactme'))
 app.use('/api/cart',require('./routes/cart'))
 app.use('/api/checkout',require('./routes/checkout'))
 app.use('/api/order',require('./routes/order'))
+app.use('/api/specifications',require('./routes/specifications'))
+app.use('/api/features',require('./routes/features'))
 
 app.listen(port, () => {
     console.log(`Example app listening on port http://localhost:${port}`)

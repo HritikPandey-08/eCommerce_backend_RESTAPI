@@ -8,6 +8,10 @@ const OrderDetailSchema = new mongoose.Schema({
     product_id :{
         type : String
     },
+    product_quantity :{
+        type :Number,
+        default : 1
+    },
     product_price:{
         type : Number
     },

@@ -141,12 +141,14 @@ router.post(
 //ROUTE 3 :-Getting user data using GET "api/auth/getUser". Login required
 router.get("/getUser", fetchUser, async (req, res) => {
 	try {
-
+		//Get id for user login data.
 		let user_id = req.user.id;
+		//Getting data of user.
 		const user = await User.findById(user_id).select("-password");
 		res.send(user)
 	}
 	catch (error) {
+		//Handle the error.
 		console.log(error.message)
 		res.status(500).send("Internal Server Error occurred");
 

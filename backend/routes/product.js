@@ -7,10 +7,10 @@ const Products = require("../models/Products");
 // This file defines the routes for the product management API.
 //ROUTE 1 :-Get all product using GET "api/product/viewProduct" Admin Login Required
 
-// Get all UserAddress records.
+// Get all products records.
 router.get("/viewProduct", fetchAdmin, async (req, res) => {
     try {
-        // Get all UserAddress records.
+        // Get all products records.
         const productDetails = await Products.find({})
         // Send the response.
         res.json(productDetails);
@@ -30,7 +30,7 @@ router.post("/addProduct", fetchAdmin,
         // Validate the input data.
         body("product_name", "Enter a valid product name").isLength({ min: 3 }),
         body("product_quantity", "Number must be greater than 0").custom((value) => value > 0),
-        body("", "Enter a valid product name").isLength({ min: 15 }),
+        body("categories", "Enter a valid categories name").isLength({ min: 3 }),
         body("product_description", "Enter a valid product name").isLength({ min: 20 }),
     ],
     async (req, res) => {

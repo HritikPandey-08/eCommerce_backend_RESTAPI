@@ -11,7 +11,7 @@ const SpecificationSchema = new mongoose.Schema({
         required: true
     },
     ram: {
-        type: int,
+        type: String,
         required: true
     },
     storage: {
@@ -29,6 +29,10 @@ const SpecificationSchema = new mongoose.Schema({
     battery_life: {
         type: String,
         required: true
+    },
+    added_on : {
+        type : Date,
+        default : Date.now
     }
 })
 

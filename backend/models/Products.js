@@ -38,12 +38,10 @@ const ProductSchema = new mongoose.Schema({
         required: true
     },
     specification_id: {
-        type: String,
-        required: true
+        type: String
     },
     feature_id: {
-        type: String,
-        required: true
+        type: String
     },
     product_bestseller:
     {

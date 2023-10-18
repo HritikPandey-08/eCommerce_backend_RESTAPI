@@ -34,9 +34,13 @@ const FeatureSchema = new mongoose.Schema({
         type : String,
         required : true
     },
-    usb_C_port : {
+    usb_c_port : {
         type : String,
         required : true
+    },
+    added_on : {
+        type : Date,
+        default : Date.now
     }
 
 })

@@ -4,123 +4,121 @@ const { body, validationResult } = require("express-validator");
 const fetchAdmin = require('../middleware/fetchAdmin');
 const fetchUser = require('../middleware/fetchUser');
 const OrderCheckOut = require("../models/Checkout");
+const Products = require("../models/Products");
 
+// This file defines the routes for the checkout management API.
 //ROUTE 1 :-Get all checkout using GET "api/checkout/viewCheckout" Admin Login Required
+//Getting all users checkout detail 
 
 router.get("/viewCheckout", fetchAdmin, async (req, res) => {
     try {
-        const checkoutDetails = await checkouts.find({})
+        //Get all the records.
+        const checkoutDetails = await OrderCheckOut.find({})
+        //Send response.
         res.json(checkoutDetails);
 
     } catch (error) {
+        //Handle the error.
         console.log(error.message);
         res.status(500).send("Internal Server Error occurred");
 
     }
 });
+
 // User 
-
-
-//TODO: checkout feature
-//RND on how ecommerce website backend made
-// and docker image 
-
-
 
 //ROUTE 2: Add checkout using POST "api/checkout/addCheckout" User Login Required
 
+//Add checkout detail of user
+//Date function
+const order_delivery_date = () => {
+    const currentDate = new Date();
+    const minDaysToAdd = 1; // Minimum number of days to add
+    const maxDaysToAdd = 10; // Maximum number of days to add
+
+    const numberOfDaysToAdd = Math.floor(Math.random() * (maxDaysToAdd - minDaysToAdd + 1)) + minDaysToAdd;
+    currentDate.setDate(currentDate.getDate() + numberOfDaysToAdd);
+
+    // Set the time to midnight (00:00:00)
+    currentDate.setHours(0, 0, 0, 0);
+
+    return currentDate;
+}
+
+const deliveryDate = order_delivery_date();
+
 router.post("/addCheckout", fetchUser,
     [
-        body("productName", "Enter a valid product name").isLength({ min: 3 }),
-        body("productQuantity", "Number must be greater than 0").custom((value) => value > 0),
-        body("productShortDesc", "Enter a valid product name").isLength({ min: 15 }),
-        body("productLongDesc", "Enter a valid product name").isLength({ min: 20 }),
+        // Validate the input data.
+        body("payment_type", "Enter a valid payment_type").isLength({ min: 3 }),
+        body("total_price", "Number must be greater than 0").custom((value) => value > 0),
+        body("payment_status", "Enter a valid product name").isLength({ min: 3 }),
+        body("order_status", "Enter a valid product name").isLength({ min: 3 })
     ],
     async (req, res) => {
         try {
             let success = false;
-            const { categories, productBrand, productName, productMrp, productPrice, productQuantity, productImages, productShortDesc, productLongDesc, productBestSeller, metaTitle, metaDesc, metaKeyword, productStatus } = req.body;
+
+            // Validate the input data.
+            // if there are errors, return bad request and error
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-            let product = await Products.findOne({$or: [{productName: req.body.productName }, { productShortDesc: req.body.productShortDesc },{productLongDesc:req.body.productLongDesc}] });
-            //Email Check and Mobile number check
-            if (product) {
-              return res.status(404).json({ success, error: "Product already exists" });
-            }
-            product = new Products({
-                categories, productBrand, productName, productMrp, productPrice, productQuantity, productImages, productShortDesc, productLongDesc, productBestSeller, metaTitle, metaDesc, metaKeyword, productStatus
+            // Get the input data.
+            const { payment_type, total_price, payment_status, order_status } = req.body;
+
+            // Create a new check record.
+            const userCheckOut = new OrderCheckOut({
+                user_id: req.user.id, payment_type, total_price, payment_status, order_status, order_delivery_date: deliveryDate
             })
-            const saveProduct = await product.save();
-            res.json(saveProduct);
+
+            // Save the new check record.
+            const saveCheckOutData = await userCheckOut.save();
+            // Send the response.
+            res.json(saveCheckOutData);
 
         } catch (error) {
             console.log(error.message);
+            // Handle the error.
             res.status(500).send("Internal Server Error occurred");
 
         }
     }
 )
 
-// ROUTE 3: Update product using POST "api/product/updateProduct" Admin Login Required
-router.put("/updateProduct/:productId",fetchAdmin,async(req,res)=>{
+// ROUTE 3: Update checkout using POST "api/checkout/updateCheckoutDetail" Admin Login Required
+router.put("/updateCheckoutDetail/:CheckOutDetailId", fetchAdmin, async (req, res) => {
     try {
+        // Getting checkout from url.
+        const CheckOutDetailId = req.params.CheckOutDetailId;
 
-        const productId = req.params.productId;
+        // Get the input data.
+        const { payment_status, order_status } = req.body;
 
-        const { categories, productBrand, productName, productMrp, productPrice, productQuantity, productImages, productShortDesc, productLongDesc, productBestSeller, metaTitle, metaDesc, metaKeyword, productStatus } = req.body;
+        //Getting checkout detail
+        const existingCheckoutDetail = await OrderCheckOut.findById(CheckOutDetailId);
 
-        const existingProduct = await Products.findById(productId);
-
-        if (!existingProduct) {
-            return res.status(404).json({ message: "Product not found" });
+        //Check if checkout for particular id exists or not
+        if (!existingCheckoutDetail) {
+            return res.status(404).json({ message: "CheckOut Detail not found" });
         }
 
-        existingProduct.categories = categories;
-        existingProduct.productBrand = productBrand;
-        existingProduct.productName = productName;
-        existingProduct.productMrp = productMrp;
-        existingProduct.productPrice = productPrice;
-        existingProduct.productQuantity = productQuantity;
-        existingProduct.productImages = productImages;
-        existingProduct.productShortDesc = productShortDesc;
-        existingProduct.productLongDesc = productLongDesc;
-        existingProduct.productBestSeller = productBestSeller;
-        existingProduct.metaTitle = metaTitle;
-        existingProduct.metaDesc = metaDesc;metaDesc
-        existingProduct.metaKeyword = metaKeyword;
-        existingProduct.productStatus = productStatus;
-              
-        // Save the updated product
-        const updatedProduct = await existingProduct.save();
-        res.json(updatedProduct);
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).send("Internal Server Error occurred");
+        //updating the data
+        existingCheckoutDetail.payment_status = payment_status;
+        existingCheckoutDetail.order_status = order_status;
+
+        // Save the updated checkout Detail
+        const updateCheckOut = await existingCheckoutDetail.save();
         
-    }
-
-})
-
-//ROUTE 4: Delete product using DELETE "api/product/deleteProduct" Admin Login Required
-
-router.delete("/deleteProduct/:productId",fetchAdmin,async(req,res)=>{
-    try {
-        const productId = req.params.productId;
-        let product = await Products.findById(productId);
-
-        if(!product)
-        {
-            return res.status(404).send("Not Found")
-        }
-
-        product = await Products.findByIdAndDelete(productId);
-        res.status(200).send({"sucess": "successfully delete the product", product: product })
+        //Send the response
+        res.json(updateCheckOut);
     } catch (error) {
+        //Handle the error.
         console.log(error.message);
         res.status(500).send("Internal Server Error occurred");
     }
+
 })
 
 module.exports = router;
